@@ -63,7 +63,6 @@ FullAdder = Module({
 	"B" : 1,
 	"Ci" : 1
 },
-
 {
 	"S" : 1,
 	"Co" : 1
