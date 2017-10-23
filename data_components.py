@@ -49,7 +49,7 @@ class DataRam4MB(Component):
 			self["output_data"].set_value(self.data[address])
 		self.prev_clk = self.input_state["clk"]
 
-# 16 4-byte register regfile with 2 read ports and 1 write port, combinational r/w
+# 16 word regfile with 2 read ports and 1 write port, combinational r/w (4-byte words)
 class RegisterFile64B(Component):
 	def __init__(self):
 		self.data = 16*[0]
@@ -67,5 +67,3 @@ class RegisterFile64B(Component):
 			addr_B = self.input_state["addr_B"]
 			self["out_A"].set_value(self.data[addr_A])
 			self["out_B"].set_value(self.data[addr_B])
-
-

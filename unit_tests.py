@@ -52,3 +52,18 @@ adder.update()
 
 print adder["S"].get_value()
 print 0x34
+
+# 32bit counter
+for i in range(20):
+	Counter32Bit.update_state()
+	Counter32Bit.update()
+
+	if i % 3 == 2:
+		Counter32Bit["clk"].set_value(1)
+	else:
+		Counter32Bit["clk"].set_value(0)
+
+	if i > 2:
+		Counter32Bit_mux["sel"].set_value(0)
+
+	print Counter32Bit.output_state

@@ -1,4 +1,7 @@
 from gate_components import *
+from data_components import *
+from arithmetic_components import *
+from other_components import *
 
 # rising clock edge detector
 RisingClockEdgeDetector_w0 = Wire(1, 0)
@@ -16,8 +19,7 @@ RisingClockEdgeDetector_a0["out"] = RisingClockEdgeDetector_w2
 
 RisingClockEdgeDetector = Module({
 	"in" : 1
-},
-{
+},{
 	"out" : 1
 })
 
@@ -76,3 +78,40 @@ FullAdder.assign_input("B", FullAdder_x0, 1)
 FullAdder.assign_input("Ci", FullAdder_x1, 1)
 FullAdder.assign_output("S", FullAdder_x1, "out")
 FullAdder.assign_output("Co", FullAdder_o0, "out")
+
+# 32-bit counter
+Counter32Bit_w0 = Wire(32)
+Counter32Bit_w1 = Wire(32)
+Counter32Bit_w2 = Wire(32)
+Counter32Bit_adder = Adder(32)
+Counter32Bit_reg = Register32Bit()
+Counter32Bit_mux = Mux(2, 32)
+
+Counter32Bit_adder["A"] = Wire(32, 1)
+Counter32Bit_adder["B"] = Counter32Bit_w1
+Counter32Bit_adder["Ci"] = Wire(1, 0)
+Counter32Bit_adder["S"] = Counter32Bit_w0
+Counter32Bit_adder["Co"] = Wire(1)
+Counter32Bit_mux[0] = Counter32Bit_w0
+Counter32Bit_mux[1] = Wire(32, 0)
+Counter32Bit_mux["sel"] = Wire(1, 1)
+Counter32Bit_mux["out"] = Counter32Bit_w2
+Counter32Bit_reg["enable"] = Wire(1, 1)
+Counter32Bit_reg["data"] = Counter32Bit_w2
+Counter32Bit_reg["clk"] = Wire(1, 0)
+Counter32Bit_reg["out"] = Counter32Bit_w1
+
+Counter32Bit = Module({
+	"enable" : 1,
+	"clk" : 1
+},{
+	"count" : 32
+})
+
+Counter32Bit.add_component(Counter32Bit_adder)
+Counter32Bit.add_component(Counter32Bit_reg)
+Counter32Bit.add_component(Counter32Bit_mux)
+
+Counter32Bit.assign_input("enable", Counter32Bit_reg, "enable")
+Counter32Bit.assign_input("clk", Counter32Bit_reg, "clk")
+Counter32Bit.assign_output("count", Counter32Bit_reg, "out")
