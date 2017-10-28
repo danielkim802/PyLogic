@@ -57,3 +57,10 @@ class ShiftRightArithmetic(Component):
 				val = self.input_state["A"]
 			result = val >> self.input_state["shift"]
 		self["out"].set_value(result)
+
+class Comparator32Bit(Component):
+	def __init__(self):
+		Component.__init__(self, {"A" : 32, "B" : 32}, {"out" : 1})
+
+	def update(self):
+		self["out"].set_value(int(self.input_state["A"] == self.input_state["B"]))

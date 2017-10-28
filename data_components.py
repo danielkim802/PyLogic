@@ -1,37 +1,66 @@
 from basic_parts import *
 
-class Register8Bit(Component):
-	def __init__(self):
+class Register2Bit(Component):
+	def __init__(self, data=0):
 		self.prev_clk = None
-		self.data = None
+		self.data = data
+		inputs = {"enable" : 1, "data" : 2, "clk" : 1}
+		outputs = {"out" : 2}
+		Component.__init__(self, inputs, outputs)
+
+	def __setitem__(self, key, wire):
+		Component.__setitem__(self, key, wire)
+		if key == "out":
+			wire.set_value(self.data)
+
+	def update(self):
+		if self.prev_clk == 0 and self.input_state["clk"] == 1 and self.input_state["enable"] == 1:
+			self.data = self.input_state["data"]
+		self["out"].set_value(self.data)
+		self.prev_clk = self.input_state["clk"]
+
+class Register8Bit(Component):
+	def __init__(self, data=0):
+		self.prev_clk = None
+		self.data = data
 		inputs = {"enable" : 1, "data" : 8, "clk" : 1}
 		outputs = {"out" : 8}
 		Component.__init__(self, inputs, outputs)
 
+	def __setitem__(self, key, wire):
+		Component.__setitem__(self, key, wire)
+		if key == "out":
+			wire.set_value(self.data)
+
 	def update(self):
 		if self.prev_clk == 0 and self.input_state["clk"] == 1 and self.input_state["enable"] == 1:
 			self.data = self.input_state["data"]
-			self["out"].set_value(self.data)
+		self["out"].set_value(self.data)
 		self.prev_clk = self.input_state["clk"]
 
 class Register32Bit(Component):
-	def __init__(self):
+	def __init__(self, data=0):
 		self.prev_clk = None
-		self.data = None
+		self.data = data
 		inputs = {"enable" : 1, "data" : 32, "clk" : 1}
 		outputs = {"out" : 32}
 		Component.__init__(self, inputs, outputs)
 
+	def __setitem__(self, key, wire):
+		Component.__setitem__(self, key, wire)
+		if key == "out":
+			wire.set_value(self.data)
+
 	def update(self):
 		if self.prev_clk == 0 and self.input_state["clk"] == 1 and self.input_state["enable"] == 1:
 			self.data = self.input_state["data"]
-			self["out"].set_value(self.data)
+		self["out"].set_value(self.data)
 		self.prev_clk = self.input_state["clk"]
 
 # word addressable data ram with 4mb of storage (32-bit addressable, 4-byte words)
 class DataRam4MB(Component):
-	def __init__(self):
-		self.data = {}
+	def __init__(self, data={}):
+		self.data = data
 		self.prev_clk = None
 		inputs = {"addr" : 32, "input_data" : 32, "enable" : 1, "clk" : 1}
 		outputs = {"output_data" : 32}
@@ -51,8 +80,8 @@ class DataRam4MB(Component):
 
 # 16 word regfile with 2 read ports and 1 write port, combinational r/w (4-byte words)
 class RegisterFile64B(Component):
-	def __init__(self):
-		self.data = 16*[0]
+	def __init__(self, data=16*[0]):
+		self.data = data
 		self.prev_clk = None
 		inputs = {"addr_A" : 4, "addr_B" : 4, "data" : 32, "addr" : 4, "enable" : 1}
 		outputs = {"out_A" : 32, "out_B" : 32}

@@ -19,11 +19,11 @@ class Component(object):
 
 	# returns size of the input
 	def input_size(self, key):
-		return self.inputs[key]
+		return self.inputs.get(key)
 
 	# returns size of the output
 	def output_size(self, key):
-		return self.outputs[key]
+		return self.outputs.get(key)
 
 	# get input value using indexing
 	def __getitem__(self, key):
@@ -32,7 +32,7 @@ class Component(object):
 		if self.output_wire.get(key) != None:
 			return self.output_wire[key]
 
-	# assignment using indexing 
+	# assignment using indexing
 	def __setitem__(self, key, wire):
 		if self.input_wire.get(key) != None and self.inputs[key] == wire.size():
 			self.input_wire[key] = wire
@@ -131,17 +131,17 @@ class Module(Component):
 	def add_component(self, component):
 		self.components += [component]
 
-	# assigns an input of the module to an input of a component
-	def assign_input(self, module_input, component, component_input):
-		if component[component_input] != None and component.input_size(component_input) == self.inputs[module_input]:
-			self.input_map[module_input] += [(component, component_input)]
-			self.input_wire[module_input] = component[component_input]
+	# assigns an input of the module to an io of a component
+	def assign_input(self, module_input, component, component_io):
+		if component[component_io] != None and (component.input_size(component_io) == self.inputs[module_input] or component.output_size(component_io) == self.inputs[module_input]):
+			self.input_map[module_input] += [(component, component_io)]
+			self.input_wire[module_input] = component[component_io]
 
-	# assigns an output of the module to an output of a component
-	def assign_output(self, module_output, component, component_output):
-		if component[component_output] != None and component.output_size(component_output) == self.outputs[module_output]:
-			self.output_map[module_output] += [(component, component_output)]
-			self.output_wire[module_output] = component[component_output]
+	# assigns an output of the module to an io of a component
+	def assign_output(self, module_output, component, component_io):
+		if component[component_io] != None and (component.input_size(component_io) == self.outputs[module_output] or component.output_size(component_io) == self.outputs[module_output]):
+			self.output_map[module_output] += [(component, component_io)]
+			self.output_wire[module_output] = component[component_io]
 
 	# sets io through inner component using io map
 	def __setitem__(self, key, wire):
@@ -169,19 +169,50 @@ class Module(Component):
 class Circuit(object):
 	def __init__(self):
 		self.components = []
+		self.wire_tracer = {}
+		self.clk = Wire(1, 0)
+		self.clk_period = 0
+		self.cycle = 0
 
 	# adds a component to the circuit
 	def add_component(self, component):
 		self.components += [component]
 
-	# TODO: add method for printing out useful information
+	# sets the clock period
+	def set_clock_period(self, t):
+		self.clk_period = t
+
+	# adds a wire to be printed out to the terminal
+	def add_terminal_output(self, wire, label):
+		self.wire_tracer[wire] = label
+
+	def print_terminal_output(self):
+		result = str(self.cycle) + " | "
+		for wire in self.wire_tracer:
+			label = self.wire_tracer[wire]
+			result += label + " : " + str(wire.get_value()) + " | "
+		print result
+
+	# returns clock
+	def get_clk(self):
+		return self.clk
 
 	# updates state of all components, then updates components
 	# OPTIMIZE LATER
 	def update(self):
-		for component in self.components:
-			component.update_state()
-		for component in self.components:
-			component.update()
+		self.clk.set_value(0)
 
+		for i in range(self.clk_period):
+			if i == self.clk_period - 1:
+				self.clk.set_value(1)
+			for component in self.components:
+				component.update_state()
+			for component in self.components:
+				component.update()
 
+		self.print_terminal_output()
+		self.cycle += 1
+
+	def run(self, cycles):
+		for i in range(cycles):
+			self.update()
