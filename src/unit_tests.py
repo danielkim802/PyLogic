@@ -93,4 +93,14 @@ for i in range(100):
 		counter["enable"].set_value(1)
 	circuit.update()
 
+# shifter
+rshift = ShiftRightLogical(32, 1)
+rshift["A"] = Wire(32, 0xdeadbeef)
+rshift["shift"] = Wire(1, 1)
+rshift["out"] = Wire(32)
+
+rshift.update_state()
+rshift.update()
+
+print hex(rshift["out"].get_value())
 

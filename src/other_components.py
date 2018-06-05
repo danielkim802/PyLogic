@@ -28,7 +28,7 @@ class Splitter64Bit(Component):
 		Component.__init__(self, {"in" : 64}, {"lsb" : 32, "msb" : 32})
 
 	def update(self):
-		lsb = (self.input_state["in"] & 0xffffffff) >> 32
+		lsb = self.input_state["in"] & 0xffffffff
 		msb = self.input_state["in"] >> 32
 		self["lsb"].set_value(lsb)
 		self["msb"].set_value(msb)

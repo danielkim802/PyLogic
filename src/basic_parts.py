@@ -38,6 +38,8 @@ class Component(object):
 			self.input_wire[key] = wire
 		elif self.output_wire.get(key) != None and self.outputs[key] == wire.size():
 			self.output_wire[key] = wire
+		else:
+			print "set io error for: " + str(self)
 
 	# updates state to reflect value of wires
 	def update_state(self):
