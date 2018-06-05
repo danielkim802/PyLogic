@@ -120,4 +120,10 @@ def test_multiplier():
 
 		circ.update()
 
-test_multiplier()
+def test_main():
+	tests = [test_datapath, test_controlfsm, test_multiplier]
+	for test in tests:
+		test()
+		print
+
+test_main()

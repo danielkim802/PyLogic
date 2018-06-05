@@ -12,17 +12,17 @@ def MultiplierControlFSM():
 	# instantiate module
 	MultiplierControlFSM = Module(
 		{
-			"lsb" : 1,
-			"req_val" : 1,
+			"lsb"      : 1,
+			"req_val"  : 1,
 			"resp_rdy" : 1,
-			"clk" : 1
+			"clk"      : 1
 		}, {
-			"req_rdy" : 1,
+			"req_rdy"  : 1,
 			"resp_val" : 1, 
-			"b_sel" : 1, 
-			"a_sel" : 1, 
-			"add_sel" : 1, 
-			"r_sel" : 1
+			"b_sel"    : 1, 
+			"a_sel"    : 1, 
+			"add_sel"  : 1, 
+			"r_sel"    : 1
 		}
 	)
 
@@ -159,14 +159,14 @@ def MultiplierDataPath():
 	# instantiate module
 	MultiplierDataPath = Module(
 		{
-			"req_msg" : 64,
-			"b_sel" : 1,
-			"a_sel" : 1,
-			"r_sel" : 1,
-			"add_sel" : 1,
-			"clk" : 1
+			"req_msg"  : 64,
+			"b_sel"    : 1,
+			"a_sel"    : 1,
+			"r_sel"    : 1,
+			"add_sel"  : 1,
+			"clk"      : 1
 		}, {
-			"lsb" : 1,
+			"lsb"      : 1,
 			"resp_msg" : 32
 		}
 	)
@@ -279,13 +279,13 @@ def Multiplier():
 	# instantiate module
 	Multiplier = Module(
 		{
-			"req_msg" : 64,
+			"req_msg"  : 64,
 			"resp_rdy" : 1,
-			"req_val" : 1,
-			"clk" : 1
+			"req_val"  : 1,
+			"clk"      : 1
 		}, {
 			"resp_msg" : 32,
-			"req_rdy" : 1, 
+			"req_rdy"  : 1, 
 			"resp_val" : 1
 		}
 	)

@@ -192,7 +192,11 @@ class Circuit(object):
 		result = str(self.cycle) + " | "
 		for wire in self.wire_tracer:
 			label = self.wire_tracer[wire]
-			result += label + " : " + str(wire.get_value()) + " | "
+			try:
+				val = hex(wire.get_value())
+			except:
+				val = str(wire.get_value())
+			result += label + " : " + val + " | "
 		print result
 
 	# returns clock
