@@ -64,3 +64,10 @@ class Comparator32Bit(Component):
 
 	def update(self):
 		self["out"].set_value(int(self.input_state["A"] == self.input_state["B"]))
+
+class Comparator(Component):
+	def __init__(self, size):
+		Component.__init__(self, {"A" : size, "B" : size}, {"out" : 1})
+
+	def update(self):
+		self["out"].set_value(int(self.input_state["A"] == self.input_state["B"]))

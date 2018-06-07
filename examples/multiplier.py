@@ -1,12 +1,7 @@
 import sys
 sys.path.insert(0, "../src")
 
-from basic_parts import *
-from arithmetic_components import *
-from data_components import *
-from other_components import *
-from gate_components import *
-import module_lib
+import pylogic
 
 def MultiplierControlFSM():
 	# instantiate module
@@ -40,7 +35,7 @@ def MultiplierControlFSM():
 
 	# initialize state register and counter
 	state_reg = Register2Bit()
-	counter = module_lib.Counter32Bit()
+	counter = Counter32Bit()
 
 	# initialize additional components
 	mstate = Mux(3, 2)

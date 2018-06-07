@@ -32,3 +32,12 @@ class Splitter64Bit(Component):
 		msb = self.input_state["in"] >> 32
 		self["lsb"].set_value(lsb)
 		self["msb"].set_value(msb)
+
+class Splitter8Bit(Component):
+	def __init__(self):
+		Component.__init__(self, {"in" : 8}, {0 : 1, 1 : 1, 2 : 1, 3 : 1, 4 : 1, 5 : 1, 6 : 1, 7 : 1})
+
+	def update(self):
+		for i in range(8):
+			self[i].set_value((self.input_state["in"] >> i) & 1)
+
