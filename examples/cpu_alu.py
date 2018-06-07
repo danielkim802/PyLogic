@@ -20,13 +20,13 @@ def ALU8Bit():
 
 	# make wires
 	A = Wire(8)
-	A0 = Wire(1)
-	A7 = Wire(1)
+	# A0 = Wire(1)
+	# A7 = Wire(1)
 	B = Wire(8)
-	B7 = Wire(1)
-	B7not = Wire(1)
+	# B7 = Wire(1)
+	# B7not = Wire(1)
 	Y = Wire(8)
-	Y7 = Wire(1)
+	# Y7 = Wire(1)
 	C = Wire(1)
 	V = Wire(1)
 	Vop = [
@@ -49,15 +49,15 @@ def ALU8Bit():
 	Cop = [
 		Wire(1), 
 		Wire(1), 
-		A0, 
-		A0, 
-		A7, 
+		A[0], 
+		A[0], 
+		A[7], 
 		Wire(1, 0), 
 		Wire(1, 0), 
 		Wire(1, 0)
 	]
-	S7Add = Wire(1)
-	S7Sub = Wire(1)
+	# S7Add = Wire(1)
+	# S7Sub = Wire(1)
 	OpCode = Wire(3)
 
 	# main components
@@ -73,12 +73,12 @@ def ALU8Bit():
 	mux0 = Mux(8, 8)
 	mux1 = Mux(8, 1)
 	mux2 = Mux(8, 1)
-	splitA = Splitter8Bit()
-	splitB = Splitter8Bit()
-	splitBnot = Splitter8Bit()
-	splitY = Splitter8Bit()
-	splitSAdd = Splitter8Bit()
-	splitSSub = Splitter8Bit()
+	# splitA = Splitter8Bit()
+	# splitB = Splitter8Bit()
+	# splitBnot = Splitter8Bit()
+	# splitY = Splitter8Bit()
+	# splitSAdd = Splitter8Bit()
+	# splitSSub = Splitter8Bit()
 	zero = Comparator(8)
 
 	# overflow check components
@@ -90,15 +90,25 @@ def ALU8Bit():
 	and2 = And(2, 1)
 
 	# add components to module
+	# components = [
+	# 	adder0, adder1, sra, srl, sll, not0, not1, mux0, mux1,
+	# 	mux2, splitA, splitB, splitBnot, splitY, splitSAdd,
+	# 	splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2, and0, or0
+	# ]
+	# labels = [
+	# 	"adder0", "adder1", "sra", "srl", "sll", "not0", 
+	# 	"not1", "mux0", "mux1", "mux2", "splitA", "splitB", 
+	# 	"splitBnot", "splitY", "splitSAdd", "splitSSub", 
+	# 	"zero", "xor0", "xor1", "and1", "xor2", "xor3", 
+	# 	"and2", "and0", "or0"
+	# ]
 	components = [
 		adder0, adder1, sra, srl, sll, not0, not1, mux0, mux1,
-		mux2, splitA, splitB, splitBnot, splitY, splitSAdd,
-		splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2, and0, or0
+		mux2, zero, xor0, xor1, and1, xor2, xor3, and2, and0, or0
 	]
 	labels = [
 		"adder0", "adder1", "sra", "srl", "sll", "not0", 
-		"not1", "mux0", "mux1", "mux2", "splitA", "splitB", 
-		"splitBnot", "splitY", "splitSAdd", "splitSSub", 
+		"not1", "mux0", "mux1", "mux2", 
 		"zero", "xor0", "xor1", "and1", "xor2", "xor3", 
 		"and2", "and0", "or0"
 	]
@@ -107,13 +117,13 @@ def ALU8Bit():
 		components[i].label = labels[i]
 
 	# splitter A
-	splitA["in"] = A
-	splitA[0] = A0
-	splitA[7] = A7
+	# splitA["in"] = A
+	# splitA[0] = A0
+	# splitA[7] = A7
 
 	# splitter Y
-	splitY["in"] = Y
-	splitY[7] = Y7
+	# splitY["in"] = Y
+	# splitY[7] = Y7
 	
 	# NOT
 	not0[0] = A
@@ -176,30 +186,30 @@ def ALU8Bit():
 	zero["out"] = Z
 
 	# overflow detection
-	splitB["in"] = B
-	splitB[7] = B7
-	splitBnot["in"] = not1["out"]
-	splitBnot[7] = B7not
-	splitSAdd["in"] = Yop[0]
-	splitSAdd[7] = S7Add
-	splitSSub["in"] = Yop[1]
-	splitSSub[7] = S7Sub
+	# splitB["in"] = B
+	# splitB[7] = B7
+	# splitBnot["in"] = not1["out"]
+	# splitBnot[7] = B7not
+	# splitSAdd["in"] = Yop[0]
+	# splitSAdd[7] = S7Add
+	# splitSSub["in"] = Yop[1]
+	# splitSSub[7] = S7Sub
 
-	xor0[0] = A7
-	xor0[1] = S7Add
+	xor0[0] = A[7]
+	xor0[1] = adder0["S"][7]
 	xor0["out"] = Wire(1)
-	xor1[0] = A7
-	xor1[1] = B7
+	xor1[0] = A[7]
+	xor1[1] = B[7]
 	xor1["out"] = Wire(1)
 	and1[0] = xor0["out"]
 	and1[1] = xor1["out"]
 	and1["out"] = Vop[0]
 
-	xor2[0] = A7
-	xor2[1] = S7Sub
+	xor2[0] = A[7]
+	xor2[1] = adder1["S"][7]
 	xor2["out"] = Wire(1)
-	xor3[0] = A7
-	xor3[1] = B7not
+	xor3[0] = A[7]
+	xor3[1] = not1["out"][7]
 	xor3["out"] = Wire(1)
 	and2[0] = xor2["out"]
 	and2[1] = xor3["out"]
@@ -212,7 +222,7 @@ def ALU8Bit():
 	alu["Y"] = Y
 	alu["C"] = C
 	alu["V"] = V
-	alu["N"] = Y7
+	alu["N"] = Y[7]
 	alu["Z"] = Z
 
 	return alu
