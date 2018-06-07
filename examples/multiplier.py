@@ -267,6 +267,9 @@ def MultiplierDataPath():
 	for component in components:
 		MultiplierDataPath.add_component(component)
 
+	breg["clk"] = areg["clk"] = rreg["clk"] = Wire(1)
+	rreg["out"] = addmux[1] = adder["B"] = Wire(32)
+
 	# assign module inputs and outputs
 	MultiplierDataPath["req_msg"] = split["in"]
 	MultiplierDataPath["b_sel"] = bmux["sel"]
@@ -276,6 +279,20 @@ def MultiplierDataPath():
 	MultiplierDataPath["clk"] = breg["clk"]
 	MultiplierDataPath["lsb"] = comp["out"]
 	MultiplierDataPath["resp_msg"] = rreg["out"]
+
+	# MultiplierDataPath.assign_input("req_msg", split, "in")
+	# MultiplierDataPath.assign_input("b_sel", bmux, "sel")
+	# MultiplierDataPath.assign_input("a_sel", amux, "sel")
+	# MultiplierDataPath.assign_input("r_sel", rmux, "sel")
+	# MultiplierDataPath.assign_input("add_sel", addmux, "sel")
+	# MultiplierDataPath.assign_input("clk", breg, "clk")
+	# MultiplierDataPath.assign_input("clk", areg, "clk")
+	# MultiplierDataPath.assign_input("clk", rreg, "clk")
+
+	# MultiplierDataPath.assign_output("lsb", comp, "out")
+	# MultiplierDataPath.assign_output("resp_msg", rreg, "out")
+	# MultiplierDataPath.assign_output("resp_msg", addmux, 1)
+	# MultiplierDataPath.assign_output("resp_msg", adder, "B")
 
 	return MultiplierDataPath
 
