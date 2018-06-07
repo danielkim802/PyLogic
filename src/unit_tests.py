@@ -1,6 +1,4 @@
-from module_lib import *
-from other_components import *
-from arithmetic_components import *
+from pylogic import *
 
 # fulladder
 FullAdder = FullAdder()
@@ -82,9 +80,9 @@ counter["clk"] = circuit.get_clk()
 counter["count"] = Wire(32)
 counter["enable"] = Wire(1, 1)
 counter["reset"] = Wire(1, 0)
-circuit.add_terminal_output(counter["count"], "count")
-circuit.add_terminal_output(counter["enable"], "enable")
-circuit.add_terminal_output(counter["reset"], "reset")
+circuit.trace(counter, "count")
+circuit.trace(counter, "enable")
+circuit.trace(counter, "reset")
 for i in range(100):
 	if i == 51:
 		counter["enable"].set_value(0)
@@ -104,3 +102,53 @@ rshift.update()
 
 print hex(rshift["out"].get_value())
 
+# wire tests
+w0 = Wire(8, 0x13)
+w1 = Wire(8, 0x25)
+a = Wire(8)
+a[7:4] = w0[3:0]
+a[3:0] = w1[7:4]
+b = Wire(4)
+b[1:0] = a[1:0]
+b[2] = Wire(1, 0)
+b[3] = Wire(1, 1)
+
+print bin(b.get_value())
+
+w = Wire(16)
+w[15:8] = w1[7:0]
+w[7:0] = w0[7:0]
+
+print hex(w.get_value())
+
+a = Wire(8)
+a[7:0] = w[11:4]
+print hex(a.get_value())
+
+w = Wire(8, 0x11)
+a = And(2, 8)
+o = Wire(8)
+a[0] = w
+a[1] = Wire(8)
+a[1][3:0] = b = w0[7:4]
+a[1][7:4] = c = w1[3:0]
+
+a.update_state()
+a.update()
+a.update_state()
+a.update()
+a.update_state()
+a.update()
+
+print a['out'].get_value()
+
+w0.set_value(0x11)
+
+a.update_state()
+a.update()
+a.update_state()
+a.update()
+a.update_state()
+a.update()
+
+print a['out'].get_value()

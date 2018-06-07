@@ -26,8 +26,8 @@ def RisingClockEdgeDetector():
 
 	RisingClockEdgeDetector.add_component(RisingClockEdgeDetector_n0)
 	RisingClockEdgeDetector.add_component(RisingClockEdgeDetector_a0)
-	RisingClockEdgeDetector.assign_input("in", RisingClockEdgeDetector_n0, 0)
-	RisingClockEdgeDetector.assign_output("out", RisingClockEdgeDetector_a0, "out")
+	RisingClockEdgeDetector["in"] = RisingClockEdgeDetector_n0[0]
+	RisingClockEdgeDetector["out"] = RisingClockEdgeDetector_a0["out"]
 
 	return RisingClockEdgeDetector
 
