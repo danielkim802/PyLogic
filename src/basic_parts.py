@@ -62,6 +62,9 @@ class Component(object):
 		raise NotImplementedError
 
 class Wire(object):
+	# object used to specify ranges of bits when
+	# splicing wires together. Specifies the parent wire
+	# and mapping of bits from the child wire to the parent wire.
 	class Partition(object):
 		def __init__(self, parent, start, stop):
 			self.parent = parent
@@ -189,18 +192,9 @@ class Gate(Component):
 
 class Module(Component):
 	# inputs and outputs indicate size of each input/output
-	# io_map maps each io to an io of an inner component
-	# io_map: input key -> (component, component input key)
 	def __init__(self, inputs, outputs):
 		Component.__init__(self, inputs, outputs)
 		self.components = []
-		self.input_map = {}
-		self.output_map = {}
-
-		for key in inputs:
-			self.input_map[key] = []
-		for key in outputs:
-			self.output_map[key] = []
 
 	# adds component to the module
 	def add_component(self, component):
@@ -214,10 +208,12 @@ class Module(Component):
 			if partition.parent is oldwire:
 				partition.parent = newwire
 
-	# sets io through inner component using io map
+	# sets io by looking at every io of inner components
 	def __setitem__(self, key, wire):
 		prevwire = self[key]
 
+		# search for identical wire in components as well as
+		# spliced wires
 		for component in self.components:
 			for inpt in component.input_wire:
 				self.traverse_wires(component[inpt], prevwire, wire)
@@ -228,6 +224,7 @@ class Module(Component):
 				if component[outpt] is prevwire:
 					component[outpt] = wire
 
+		# search input and outputs for identical wire
 		for inpt in self.input_wire:
 			self.traverse_wires(self[inpt], prevwire, wire)
 			if self[inpt] is prevwire:

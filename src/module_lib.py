@@ -76,12 +76,6 @@ def FullAdder():
 	for c in [FullAdder_x0, FullAdder_x1, FullAdder_a0, FullAdder_a1, FullAdder_o0]:
 		FullAdder.add_component(c)
 
-	# FullAdder.assign_input("A", FullAdder_x0, 0)
-	# FullAdder.assign_input("B", FullAdder_x0, 1)
-	# FullAdder.assign_input("Ci", FullAdder_x1, 1)
-	# FullAdder.assign_output("S", FullAdder_x1, "out")
-	# FullAdder.assign_output("Co", FullAdder_o0, "out")
-
 	FullAdder["A"] = FullAdder_x0[0]
 	FullAdder["B"] = FullAdder_x0[1]
 	FullAdder["Ci"] = FullAdder_x1[1]
