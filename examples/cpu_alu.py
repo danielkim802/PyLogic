@@ -6,15 +6,15 @@ from pylogic import *
 def ALU8Bit():
 	alu = Module(
 		{
-			"A"      : 8,
-			"B"      : 8,
+			"A"  : 8,
+			"B"  : 8,
 			"Op" : 3
 		}, {
-			"Y"      : 8,
-			"C"      : 1,
-			"V"      : 1,
-			"N"      : 1,
-			"Z"      : 1
+			"Y"  : 8,
+			"C"  : 1,
+			"V"  : 1,
+			"N"  : 1,
+			"Z"  : 1
 		}
 	)
 
@@ -93,12 +93,14 @@ def ALU8Bit():
 	components = [
 		adder0, adder1, sra, srl, sll, not0, not1, mux0, mux1,
 		mux2, splitA, splitB, splitBnot, splitY, splitSAdd,
-		splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2
+		splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2, and0, or0
 	]
 	labels = [
-		"adder0", "adder1", "sra", "srl", "sll", "not0", "not1", "mux0", "mux1",
-		"mux2", "splitA", "splitB", "splitBnot", "splitY", "splitSAdd",
-		"splitSSub", "zero", "xor0", "xor1", "and1", "xor2", "xor3", "and2"
+		"adder0", "adder1", "sra", "srl", "sll", "not0", 
+		"not1", "mux0", "mux1", "mux2", "splitA", "splitB", 
+		"splitBnot", "splitY", "splitSAdd", "splitSSub", 
+		"zero", "xor0", "xor1", "and1", "xor2", "xor3", 
+		"and2", "and0", "or0"
 	]
 	for i in range(len(components)):
 		alu.add_component(components[i])
@@ -136,14 +138,17 @@ def ALU8Bit():
 	# SRA
 	sra["A"] = A
 	sra["out"] = Yop[2]
+	sra["shift"] = Wire(1, 1)
 
 	# SRL
 	srl["A"] = A
 	srl["out"] = Yop[3]
+	srl["shift"] = Wire(1, 1)
 
 	# SLL
 	sll["A"] = A
 	sll["out"] = Yop[4]
+	sll["shift"] = Wire(1, 1)
 
 	# AND
 	and0[0] = A
