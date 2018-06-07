@@ -8,7 +8,7 @@ def ALU8Bit():
 		{
 			"A"      : 8,
 			"B"      : 8,
-			"OpCode" : 3
+			"Op" : 3
 		}, {
 			"Y"      : 8,
 			"C"      : 1,
@@ -58,8 +58,11 @@ def ALU8Bit():
 	]
 	S7Add = Wire(1)
 	S7Sub = Wire(1)
+	OpCode = Wire(3)
 
 	# main components
+	and0 = And(2, 8)
+	or0 = Or(2, 8)
 	adder0 = Adder(8)
 	adder1 = Adder(8)
 	sra = ShiftRightArithmetic(8, 1)
@@ -80,11 +83,26 @@ def ALU8Bit():
 
 	# overflow check components
 	xor0 = Xor(2, 1)
-	xor1 = XNor(2, 1)
+	xor1 = Xnor(2, 1)
 	and1 = And(2, 1)
 	xor2 = Xor(2, 1)
-	xor3 = XNor(2, 1)
+	xor3 = Xnor(2, 1)
 	and2 = And(2, 1)
+
+	# add components to module
+	components = [
+		adder0, adder1, sra, srl, sll, not0, not1, mux0, mux1,
+		mux2, splitA, splitB, splitBnot, splitY, splitSAdd,
+		splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2
+	]
+	labels = [
+		"adder0", "adder1", "sra", "srl", "sll", "not0", "not1", "mux0", "mux1",
+		"mux2", "splitA", "splitB", "splitBnot", "splitY", "splitSAdd",
+		"splitSSub", "zero", "xor0", "xor1", "and1", "xor2", "xor3", "and2"
+	]
+	for i in range(len(components)):
+		alu.add_component(components[i])
+		components[i].label = labels[i]
 
 	# splitter A
 	splitA["in"] = A
@@ -158,9 +176,9 @@ def ALU8Bit():
 	splitBnot["in"] = not1["out"]
 	splitBnot[7] = B7not
 	splitSAdd["in"] = Yop[0]
-	splitSAdd["out"] = S7Add
+	splitSAdd[7] = S7Add
 	splitSSub["in"] = Yop[1]
-	splitSSub["out"] = S7Sub
+	splitSSub[7] = S7Sub
 
 	xor0[0] = A7
 	xor0[1] = S7Add
@@ -182,25 +200,14 @@ def ALU8Bit():
 	and2[1] = xor3["out"]
 	and2["out"] = Vop[1]
 
-	# add components
-	components = [
-		adder0, adder1, sra, srl, sll, not0, not1, mux0, mux1, 
-		mux2, splitA, splitB, splitBnot, splitY, splitSAdd, 
-		splitSSub, zero, xor0, xor1, and1, xor2, xor3, and2
-	]
-	for component in components:
-		alu.add_component(component)
-
 	# assign inputs and outputs
-	alu.assign_input("A", adder0, "A")
-	alu.assign_input("A", adder1, "A")
-	alu.assign_input("A", sra, "A")
-	alu.assign_input("A", srl, "A")
-	alu.assign_input("A", sll, "A")
-	alu.assign_input("A", and0, 0)
-	alu.assign_input("A", or0, 0)
-	
+	alu["A"] = A
+	alu["B"] = B
+	alu["Op"] = OpCode
+	alu["Y"] = Y
+	alu["C"] = C
+	alu["V"] = V
+	alu["N"] = Y7
+	alu["Z"] = Z
 
-
-
-
+	return alu

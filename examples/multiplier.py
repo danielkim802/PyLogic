@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "../src")
 
-import pylogic
+from pylogic import *
 
 def MultiplierControlFSM():
 	# instantiate module
@@ -135,18 +135,17 @@ def MultiplierControlFSM():
 		MultiplierControlFSM.add_component(component)
 
 	# assign module inputs and outputs
-	MultiplierControlFSM.assign_input("lsb", n, 0)
-	MultiplierControlFSM.assign_input("req_val", m0, "sel")
-	MultiplierControlFSM.assign_input("resp_rdy", m2, "sel")
-	MultiplierControlFSM.assign_input("clk", state_reg, "clk")
-	MultiplierControlFSM.assign_input("clk", counter, "clk")
-
-	MultiplierControlFSM.assign_output("req_rdy", m4, "out")
-	MultiplierControlFSM.assign_output("resp_val", m5, "out")
-	MultiplierControlFSM.assign_output("b_sel", m6, "out")
-	MultiplierControlFSM.assign_output("a_sel", m7, "out")
-	MultiplierControlFSM.assign_output("add_sel", m8, "out")
-	MultiplierControlFSM.assign_output("r_sel", m9, "out")
+	MultiplierControlFSM["lsb"] = n[0]
+	MultiplierControlFSM["req_val"] = m0["sel"]
+	MultiplierControlFSM["resp_rdy"] = m2["sel"]
+	MultiplierControlFSM["clk"] = state_reg["clk"]
+	MultiplierControlFSM["clk"] = counter["clk"]
+	MultiplierControlFSM["req_rdy"] = m4["out"]
+	MultiplierControlFSM["resp_val"] = m5["out"]
+	MultiplierControlFSM["b_sel"] = m6["out"]
+	MultiplierControlFSM["a_sel"] = m7["out"]
+	MultiplierControlFSM["add_sel"] = m8["out"]
+	MultiplierControlFSM["r_sel"] = m9["out"]
 
 	return MultiplierControlFSM
 
@@ -254,19 +253,14 @@ def MultiplierDataPath():
 		MultiplierDataPath.add_component(component)
 
 	# assign module inputs and outputs
-	MultiplierDataPath.assign_input("req_msg", split, "in")
-	MultiplierDataPath.assign_input("b_sel", bmux, "sel")
-	MultiplierDataPath.assign_input("a_sel", amux, "sel")
-	MultiplierDataPath.assign_input("r_sel", rmux, "sel")
-	MultiplierDataPath.assign_input("add_sel", addmux, "sel")
-	MultiplierDataPath.assign_input("clk", breg, "clk")
-	MultiplierDataPath.assign_input("clk", areg, "clk")
-	MultiplierDataPath.assign_input("clk", rreg, "clk")
-
-	MultiplierDataPath.assign_output("lsb", comp, "out")
-	MultiplierDataPath.assign_output("resp_msg", rreg, "out")
-	MultiplierDataPath.assign_output("resp_msg", addmux, 1)
-	MultiplierDataPath.assign_output("resp_msg", adder, "B")
+	MultiplierDataPath["req_msg"] = split["in"]
+	MultiplierDataPath["b_sel"] = bmux["sel"]
+	MultiplierDataPath["a_sel"] = amux["sel"]
+	MultiplierDataPath["r_sel"] = rmux["sel"]
+	MultiplierDataPath["add_sel"] = addmux["sel"]
+	MultiplierDataPath["clk"] = breg["clk"]
+	MultiplierDataPath["lsb"] = comp["out"]
+	MultiplierDataPath["resp_msg"] = rreg["out"]
 
 	return MultiplierDataPath
 
@@ -313,15 +307,13 @@ def Multiplier():
 	Multiplier.add_component(dpath)
 	Multiplier.add_component(controlfsm)
 
-	# assign module inputs and outputs
-	Multiplier.assign_input("req_val", controlfsm, "req_val")
-	Multiplier.assign_input("resp_rdy", controlfsm, "resp_rdy")
-	Multiplier.assign_input("req_msg", dpath, "req_msg")
-	Multiplier.assign_input("clk", dpath, "clk")
-	Multiplier.assign_input("clk", controlfsm, "clk")
-
-	Multiplier.assign_output("resp_val", controlfsm, "resp_val")
-	Multiplier.assign_output("req_rdy", controlfsm, "req_rdy")
-	Multiplier.assign_output("resp_msg", dpath, "resp_msg")
+	Multiplier["req_val"] = controlfsm["req_val"]
+	Multiplier["resp_rdy"] = controlfsm["resp_rdy"]
+	Multiplier["req_msg"] = dpath["req_msg"]
+	Multiplier["clk"] = dpath["clk"]
+	Multiplier["clk"] = controlfsm["clk"]
+	Multiplier["resp_val"] = controlfsm["resp_val"]
+	Multiplier["req_rdy"] = controlfsm["req_rdy"]
+	Multiplier["resp_msg"] = dpath["resp_msg"]
 
 	return Multiplier

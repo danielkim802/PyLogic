@@ -2,7 +2,8 @@ class Component(object):
 	# inputs and outputs are dictionaries with (io_name -> number of bits)
 	# io_state contains wire values from previous update
 	# io_wires contain wires for each io
-	def __init__(self, inputs, outputs):
+	def __init__(self, inputs, outputs, label=None):
+		self.label = label
 		self.inputs = inputs
 		self.outputs = outputs
 		self.input_state = {}
@@ -34,12 +35,20 @@ class Component(object):
 
 	# assignment using indexing
 	def __setitem__(self, key, wire):
-		if self.input_wire.get(key) != None and self.inputs[key] == wire.size():
+		if key in self.input_wire and (self.inputs[key] == wire.size() or wire.size() == 0):
 			self.input_wire[key] = wire
-		elif self.output_wire.get(key) != None and self.outputs[key] == wire.size():
+		elif key in self.output_wire and (self.outputs[key] == wire.size() or wire.size() == 0):
 			self.output_wire[key] = wire
 		else:
-			print "set io error for: " + str(self)
+			name = self.label if self.label is not None else str(self)
+			if key in self.inputs:
+				io = self.inputs[key]
+			elif key in self.outputs:
+				io = self.outputs[key]
+			else:
+				print "no such io for [%s]: %s" % (name, str(key))
+				return
+			print "size mismatch for [%s]: got %i, expected %i" % (name, wire.size(), io)
 
 	# updates state to reflect value of wires
 	def update_state(self):
@@ -133,28 +142,35 @@ class Module(Component):
 	def add_component(self, component):
 		self.components += [component]
 
-	# assigns an input of the module to an io of a component
-	def assign_input(self, module_input, component, component_io):
-		if component[component_io] != None and (component.input_size(component_io) == self.inputs[module_input] or component.output_size(component_io) == self.inputs[module_input]):
-			self.input_map[module_input] += [(component, component_io)]
-			self.input_wire[module_input] = component[component_io]
+	# # assigns an input of the module to an io of a component
+	# def assign_input(self, module_input, component, component_io):
+	# 	if component[component_io] != None and (component.input_size(component_io) == self.inputs[module_input] or component.output_size(component_io) == self.inputs[module_input]):
+	# 		self.input_map[module_input] += [(component, component_io)]
+	# 		self.input_wire[module_input] = component[component_io]
 
-	# assigns an output of the module to an io of a component
-	def assign_output(self, module_output, component, component_io):
-		if component[component_io] != None and (component.input_size(component_io) == self.outputs[module_output] or component.output_size(component_io) == self.outputs[module_output]):
-			self.output_map[module_output] += [(component, component_io)]
-			self.output_wire[module_output] = component[component_io]
+	# # assigns an output of the module to an io of a component
+	# def assign_output(self, module_output, component, component_io):
+	# 	if component[component_io] != None and (component.input_size(component_io) == self.outputs[module_output] or component.output_size(component_io) == self.outputs[module_output]):
+	# 		self.output_map[module_output] += [(component, component_io)]
+	# 		self.output_wire[module_output] = component[component_io]
 
 	# sets io through inner component using io map
 	def __setitem__(self, key, wire):
+		prevwire = self[key]
+		for component in self.components:
+			for inpt in component.input_wire:
+				if component[inpt] is prevwire:
+					component[inpt] = wire
+			for outpt in component.output_wire:
+				if component[outpt] is prevwire:
+					component[outpt] = wire
 		Component.__setitem__(self, key, wire)
-
-		if self.input_map.get(key) != None and self.inputs[key] == wire.size():
-			for (component, component_key) in self.input_map[key]:
-				component[component_key] = wire
-		if self.output_map.get(key) != None and self.outputs[key] == wire.size():
-			for (component, component_key) in self.output_map[key]:
-				component[component_key] = wire
+		# if self.input_map.get(key) != None and self.inputs[key] == wire.size():
+		# 	for (component, component_key) in self.input_map[key]:
+		# 		component[component_key] = wire
+		# if self.output_map.get(key) != None and self.outputs[key] == wire.size():
+		# 	for (component, component_key) in self.output_map[key]:
+		# 		component[component_key] = wire
 
 	# updates state to reflect value of wires
 	def update_state(self):
@@ -171,10 +187,12 @@ class Module(Component):
 class Circuit(object):
 	def __init__(self):
 		self.components = []
-		self.wire_tracer = {}
+		self.tracer = {}
+		self.labels = []
 		self.clk = Wire(1, 0)
-		self.clk_period = 0
+		self.clk_period = 1
 		self.cycle = 0
+		self.enable_trace = False
 
 	# adds a component to the circuit
 	def add_component(self, component):
@@ -185,17 +203,26 @@ class Circuit(object):
 		self.clk_period = t
 
 	# adds a wire to be printed out to the terminal
-	def add_terminal_output(self, wire, label):
-		self.wire_tracer[wire] = label
+	def trace(self, component, io, label=None):
+		if label is None:
+			self.tracer[str(io)] = (component, io)
+			self.labels += [str(io)]
+		else:
+			self.tracer[label] = (component, io)
+			self.labels += [label]
 
-	def print_terminal_output(self):
+	def clear_trace(self):
+		self.tracer = {}
+		self.labels = []
+
+	def print_trace(self):
 		result = str(self.cycle) + " | "
-		for wire in self.wire_tracer:
-			label = self.wire_tracer[wire]
+		for label in self.labels:
+			component, io = self.tracer[label]
 			try:
-				val = hex(wire.get_value())
+				val = hex(component[io].get_value())
 			except:
-				val = str(wire.get_value())
+				val = str(component[io].get_value())
 			result += label + " : " + val + " | "
 		print result
 
@@ -216,7 +243,8 @@ class Circuit(object):
 			for component in self.components:
 				component.update()
 
-		self.print_terminal_output()
+		if self.enable_trace:
+			self.print_trace()
 		self.cycle += 1
 
 	def run(self, cycles):
