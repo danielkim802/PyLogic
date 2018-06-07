@@ -1,7 +1,7 @@
 import sys
 sys.path.insert(0, "../src")
 
-import pylogic
+from pylogic import *
 
 def MultiplierControlFSM():
 	# instantiate module
