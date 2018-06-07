@@ -26,8 +26,8 @@ def RisingClockEdgeDetector():
 
 	RisingClockEdgeDetector.add_component(RisingClockEdgeDetector_n0)
 	RisingClockEdgeDetector.add_component(RisingClockEdgeDetector_a0)
-	RisingClockEdgeDetector.assign_input("in", RisingClockEdgeDetector_n0, 0)
-	RisingClockEdgeDetector.assign_output("out", RisingClockEdgeDetector_a0, "out")
+	RisingClockEdgeDetector["in"] = RisingClockEdgeDetector_n0[0]
+	RisingClockEdgeDetector["out"] = RisingClockEdgeDetector_a0["out"]
 
 	return RisingClockEdgeDetector
 
@@ -76,11 +76,11 @@ def FullAdder():
 	for c in [FullAdder_x0, FullAdder_x1, FullAdder_a0, FullAdder_a1, FullAdder_o0]:
 		FullAdder.add_component(c)
 
-	FullAdder.assign_input("A", FullAdder_x0, 0)
-	FullAdder.assign_input("B", FullAdder_x0, 1)
-	FullAdder.assign_input("Ci", FullAdder_x1, 1)
-	FullAdder.assign_output("S", FullAdder_x1, "out")
-	FullAdder.assign_output("Co", FullAdder_o0, "out")
+	FullAdder["A"] = FullAdder_x0[0]
+	FullAdder["B"] = FullAdder_x0[1]
+	FullAdder["Ci"] = FullAdder_x1[1]
+	FullAdder["S"] = FullAdder_x1["out"]
+	FullAdder["Co"] = FullAdder_o0["out"]
 
 	return FullAdder
 
@@ -116,10 +116,9 @@ def Counter32Bit():
 	Counter32Bit.add_component(Counter32Bit_reg)
 	Counter32Bit.add_component(Counter32Bit_mux)
 
-	Counter32Bit.assign_input("enable", Counter32Bit_reg, "enable")
-	Counter32Bit.assign_input("reset", Counter32Bit_mux, "sel")
-	Counter32Bit.assign_input("clk", Counter32Bit_reg, "clk")
-	Counter32Bit.assign_output("count", Counter32Bit_reg, "out")
-	Counter32Bit.assign_output("count", Counter32Bit_adder, "B")
+	Counter32Bit["enable"] = Counter32Bit_reg["enable"]
+	Counter32Bit["reset"] = Counter32Bit_mux["sel"]
+	Counter32Bit["clk"] = Counter32Bit_reg["clk"]
+	Counter32Bit["count"] = Counter32Bit_reg["out"]
 
 	return Counter32Bit

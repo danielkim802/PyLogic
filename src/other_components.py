@@ -39,5 +39,8 @@ class Splitter8Bit(Component):
 
 	def update(self):
 		for i in range(8):
-			self[i].set_value((self.input_state["in"] >> i) & 1)
+			if self.input_state["in"] is not None:
+				self[i].set_value((self.input_state["in"] >> i) & 1)
+			else:
+				self[i].set_value(None)
 

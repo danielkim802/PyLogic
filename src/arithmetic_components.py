@@ -13,6 +13,11 @@ class Adder(Component):
 			result = self.input_state["A"] + self.input_state["B"] + self.input_state["Ci"]
 		self["S"].set_value(result)
 
+		if result is not None:
+			self["Co"].set_value((result >> self["A"].size()) & 1)
+		else:
+			self["Co"].set_value(None)
+
 class ShiftRightLogical(Component):
 	def __init__(self, input_size, shift_size):
 		inputs = {"A" : input_size, "shift" : shift_size}

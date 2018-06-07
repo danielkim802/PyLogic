@@ -20,13 +20,14 @@ def test_controlfsm():
 	controlfsm["add_sel"] = Wire(1)
 	controlfsm["r_sel"] = Wire(1)
 
-	circ.add_terminal_output(controlfsm["req_rdy"], "req_rdy")
-	circ.add_terminal_output(controlfsm["req_rdy"], "req_rdy")
-	circ.add_terminal_output(controlfsm["resp_val"], "resp_val")
-	circ.add_terminal_output(controlfsm["b_sel"], "b_sel")
-	circ.add_terminal_output(controlfsm["a_sel"], "a_sel")
-	circ.add_terminal_output(controlfsm["add_sel"], "add_sel")
-	circ.add_terminal_output(controlfsm["r_sel"], "r_sel")
+	circ.trace(controlfsm, "req_rdy")
+	circ.trace(controlfsm, "req_rdy")
+	circ.trace(controlfsm, "resp_val")
+	circ.trace(controlfsm, "b_sel")
+	circ.trace(controlfsm, "a_sel")
+	circ.trace(controlfsm, "add_sel")
+	circ.trace(controlfsm, "r_sel")
+	circ.enable_trace = True
 
 	for i in range(150):
 		if i == 2:
@@ -66,8 +67,9 @@ def test_datapath():
 
 	circ.add_component(n)
 
-	circ.add_terminal_output(dpath["lsb"], "lsb")
-	circ.add_terminal_output(dpath["resp_msg"], "resp_msg")
+	circ.trace(dpath, "lsb")
+	circ.trace(dpath, "resp_msg")
+	circ.enable_trace = True
 
 	for i in range(70):
 		if i == 0:
@@ -103,12 +105,13 @@ def test_multiplier():
 
 	multiplier["clk"] = circ.get_clk()
 
-	circ.add_terminal_output(multiplier["req_val"], "req_val")
-	circ.add_terminal_output(multiplier["resp_val"], "resp_val")
-	circ.add_terminal_output(multiplier["req_rdy"], "req_rdy")
-	circ.add_terminal_output(multiplier["resp_rdy"], "resp_rdy")
-	circ.add_terminal_output(multiplier["req_msg"], "req_msg")
-	circ.add_terminal_output(multiplier["resp_msg"], "resp_msg")
+	circ.trace(multiplier, "req_val")
+	circ.trace(multiplier, "resp_val")
+	circ.trace(multiplier, "req_rdy")
+	circ.trace(multiplier, "resp_rdy")
+	circ.trace(multiplier, "req_msg")
+	circ.trace(multiplier, "resp_msg")
+	circ.enable_trace = True
 
 	for i in range(70):
 		if i == 2:

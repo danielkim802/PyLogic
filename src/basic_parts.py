@@ -2,7 +2,8 @@ class Component(object):
 	# inputs and outputs are dictionaries with (io_name -> number of bits)
 	# io_state contains wire values from previous update
 	# io_wires contain wires for each io
-	def __init__(self, inputs, outputs):
+	def __init__(self, inputs, outputs, label=None):
+		self.label = label
 		self.inputs = inputs
 		self.outputs = outputs
 		self.input_state = {}
@@ -12,10 +13,10 @@ class Component(object):
 
 		for key in inputs:
 			self.input_state[key] = None
-			self.input_wire[key] = Wire(0)
+			self.input_wire[key] = Wire(self.inputs[key])
 		for key in outputs:
 			self.output_state[key] = None
-			self.output_wire[key] = Wire(0)
+			self.output_wire[key] = Wire(self.outputs[key])
 
 	# returns size of the input
 	def input_size(self, key):
@@ -34,12 +35,20 @@ class Component(object):
 
 	# assignment using indexing
 	def __setitem__(self, key, wire):
-		if self.input_wire.get(key) != None and self.inputs[key] == wire.size():
+		if key in self.input_wire and self.inputs[key] == wire.size():
 			self.input_wire[key] = wire
-		elif self.output_wire.get(key) != None and self.outputs[key] == wire.size():
+		elif key in self.output_wire and self.outputs[key] == wire.size():
 			self.output_wire[key] = wire
 		else:
-			print "set io error for: " + str(self)
+			name = self.label if self.label is not None else str(self)
+			if key in self.inputs:
+				io = self.inputs[key]
+			elif key in self.outputs:
+				io = self.outputs[key]
+			else:
+				print "no such io for [%s]: %s" % (name, str(key))
+				return
+			print "size mismatch for [%s]: got %i, expected %i" % (name, wire.size(), io)
 
 	# updates state to reflect value of wires
 	def update_state(self):
@@ -53,11 +62,21 @@ class Component(object):
 		raise NotImplementedError
 
 class Wire(object):
+	# object used to specify ranges of bits when
+	# splicing wires together. Specifies the parent wire
+	# and mapping of bits from the child wire to the parent wire.
+	class Partition(object):
+		def __init__(self, parent, start, stop):
+			self.parent = parent
+			self.pstart, self.pstop = start, stop
+			self.start, self.stop = start - stop, 0
+
 	# bits is the number of bits for the wire
 	# value can be undefined
 	def __init__(self, bits, value=None):
 		self.value = value
 		self.bits = bits
+		self.partitions = []
 
 	# sets the size of the wire
 	def set_size(self, size):
@@ -67,41 +86,98 @@ class Wire(object):
 	def size(self):
 		return self.bits
 
+	# returns value of a single bit
+	def get_bit(self, i):
+		if self.value is None:
+			return None
+
+		return (self.value >> i) & 1
+
+	# sets a single bit
+	def set_bit(self, i, val):
+		if self.value is None:
+			return
+
+		self.value &= ~(1 << i)
+		self.value |= (1 if val else 0) << i
+
 	# sets value of the wire
 	def set_value(self, value):
 		self.value = value
 
 	# gets value of wire truncated to fit number of bits
 	def get_value(self):
-		if self.value == None:
-			return None
-		return self.value & (2**self.bits - 1)
+		mask = 2**self.bits - 1
+		if not self.partitions:
+			return self.value & mask if self.value is not None else None
+
+		self.value = 0
+		d = {}
+		for partition in self.partitions:
+			myrange = range(partition.stop, partition.start + 1)
+			parentrange = range(partition.pstop, partition.pstart + 1)
+			parent = partition.parent
+			parent.get_value()
+
+			for i in range(len(myrange)):
+				if myrange[i] not in d:
+					d[myrange[i]] = 1
+				else:
+					d[myrange[i]] += 1
+				self.set_bit(myrange[i], parent.get_bit(parentrange[i]))
+
+		for i in range(self.bits):
+			if i not in d or d[i] != 1:
+				self.value = None
+				print "Wire splice mismatch"
+			else:
+				del d[i]
+
+		if len(d) != 0:
+			self.value = None
+			print "Wire splice mismatch"
+
+		if self.value is not None:
+			return self.value & mask
+		return self.value
 
 	# get bit or slice with lsb ordering
 	def __getitem__(self, key):
-		if self.value == None:
-			return None
+		if type(key) == slice:
+			assert key.start >= key.stop and 0 <= key.start < self.bits and 0 <= key.stop < self.bits, "Wire splice out of bounds"
+		if type(key) == int:
+			assert key < self.bits, "Wire splice out of bounds"
 
-		if isinstance(key, slice):
-			return (self.value >> key.stop) & (2**(key.start - key.stop + 1) - 1)
+		if type(key) == slice:
+			newwire = Wire(key.start - key.stop + 1)
+			newwire.partitions += [self.Partition(self, key.start, key.stop)]
+			return newwire
 
 		elif type(key) == int:
-			return (self.value >> key) & 1
+			newwire = Wire(1)
+			newwire.partitions += [self.Partition(self, key, key)]
+			return newwire
 
 	# set bits or slice with lsb ordering
 	def __setitem__(self, key, value):
-		if self.value == None:
-			return
+		assert type(value) == Wire, "Wire splice must be set to a wire"
+		if type(key) == slice:
+			assert key.start >= key.stop and 0 <= key.start < self.bits and 0 <= key.stop < self.bits, "Wire splice out of bounds"
+			assert value.bits == key.start - key.stop + 1, "Wire splice mismatch"
+		if type(key) == int:
+			assert key < self.bits, "Wire splice out of bounds"
 
-		if isinstance(key, slice):
-			mask = 2**(key.start - key.stop + 1) - 1
-			self.value &= ~(mask << key.stop)
-			self.value |= (value & mask) << key.stop
+		if type(key) == slice:
+			partition = self.Partition(value, value.bits - 1, 0)
+			partition.start = key.start
+			partition.stop = key.stop
+			self.partitions += [partition]
 
 		elif type(key) == int:
-			val = value & 1
-			self.value &= ~(1 << key)
-			self.value |= val << key
+			partition = self.Partition(value, 0, 0)
+			partition.start = key
+			partition.stop = key
+			self.partitions += [partition]
 
 class Gate(Component):
 	# initializes logic gate given a number of inputs and input size
@@ -116,45 +192,51 @@ class Gate(Component):
 
 class Module(Component):
 	# inputs and outputs indicate size of each input/output
-	# io_map maps each io to an io of an inner component
-	# io_map: input key -> (component, component input key)
 	def __init__(self, inputs, outputs):
 		Component.__init__(self, inputs, outputs)
 		self.components = []
-		self.input_map = {}
-		self.output_map = {}
-
-		for key in inputs:
-			self.input_map[key] = []
-		for key in outputs:
-			self.output_map[key] = []
 
 	# adds component to the module
 	def add_component(self, component):
 		self.components += [component]
 
-	# assigns an input of the module to an io of a component
-	def assign_input(self, module_input, component, component_io):
-		if component[component_io] != None and (component.input_size(component_io) == self.inputs[module_input] or component.output_size(component_io) == self.inputs[module_input]):
-			self.input_map[module_input] += [(component, component_io)]
-			self.input_wire[module_input] = component[component_io]
+	# traverse through tree of wires and replace identical wires 
+	# in partitions
+	def traverse_wires(self, root, oldwire, newwire):
+		for partition in root.partitions:
+			self.traverse_wires(partition.parent, oldwire, newwire)
+			if partition.parent is oldwire:
+				partition.parent = newwire
 
-	# assigns an output of the module to an io of a component
-	def assign_output(self, module_output, component, component_io):
-		if component[component_io] != None and (component.input_size(component_io) == self.outputs[module_output] or component.output_size(component_io) == self.outputs[module_output]):
-			self.output_map[module_output] += [(component, component_io)]
-			self.output_wire[module_output] = component[component_io]
-
-	# sets io through inner component using io map
+	# sets io by looking at every io of inner components
 	def __setitem__(self, key, wire):
-		Component.__setitem__(self, key, wire)
+		prevwire = self[key]
 
-		if self.input_map.get(key) != None and self.inputs[key] == wire.size():
-			for (component, component_key) in self.input_map[key]:
-				component[component_key] = wire
-		if self.output_map.get(key) != None and self.outputs[key] == wire.size():
-			for (component, component_key) in self.output_map[key]:
-				component[component_key] = wire
+		# search for identical wire in components as well as
+		# spliced wires
+		for component in self.components:
+			for inpt in component.input_wire:
+				self.traverse_wires(component[inpt], prevwire, wire)
+				if component[inpt] is prevwire:
+					component[inpt] = wire
+			for outpt in component.output_wire:
+				self.traverse_wires(component[outpt], prevwire, wire)
+				if component[outpt] is prevwire:
+					component[outpt] = wire
+
+		# search input and outputs for identical wire
+		for inpt in self.input_wire:
+			self.traverse_wires(self[inpt], prevwire, wire)
+			if self[inpt] is prevwire:
+				if self[inpt].partitions:
+					wire.partitions = self[inpt].partitions
+				Component.__setitem__(self, inpt, wire)
+		for outpt in self.output_wire:
+			self.traverse_wires(self[outpt], prevwire, wire)
+			if self[outpt] is prevwire:
+				if self[outpt].partitions:
+					wire.partitions = self[outpt].partitions
+				Component.__setitem__(self, outpt, wire)
 
 	# updates state to reflect value of wires
 	def update_state(self):
@@ -171,10 +253,12 @@ class Module(Component):
 class Circuit(object):
 	def __init__(self):
 		self.components = []
-		self.wire_tracer = {}
+		self.tracer = {}
+		self.labels = []
 		self.clk = Wire(1, 0)
-		self.clk_period = 0
+		self.clk_period = 1
 		self.cycle = 0
+		self.enable_trace = False
 
 	# adds a component to the circuit
 	def add_component(self, component):
@@ -185,17 +269,26 @@ class Circuit(object):
 		self.clk_period = t
 
 	# adds a wire to be printed out to the terminal
-	def add_terminal_output(self, wire, label):
-		self.wire_tracer[wire] = label
+	def trace(self, component, io, label=None):
+		if label is None:
+			self.tracer[str(io)] = (component, io)
+			self.labels += [str(io)]
+		else:
+			self.tracer[label] = (component, io)
+			self.labels += [label]
 
-	def print_terminal_output(self):
+	def clear_trace(self):
+		self.tracer = {}
+		self.labels = []
+
+	def print_trace(self):
 		result = str(self.cycle) + " | "
-		for wire in self.wire_tracer:
-			label = self.wire_tracer[wire]
+		for label in self.labels:
+			component, io = self.tracer[label]
 			try:
-				val = hex(wire.get_value())
+				val = hex(component[io].get_value())
 			except:
-				val = str(wire.get_value())
+				val = str(component[io].get_value())
 			result += label + " : " + val + " | "
 		print result
 
@@ -216,7 +309,8 @@ class Circuit(object):
 			for component in self.components:
 				component.update()
 
-		self.print_terminal_output()
+		if self.enable_trace:
+			self.print_trace()
 		self.cycle += 1
 
 	def run(self, cycles):
