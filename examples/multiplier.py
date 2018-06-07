@@ -134,6 +134,8 @@ def MultiplierControlFSM():
 	for component in components:
 		MultiplierControlFSM.add_component(component)
 
+	state_reg["clk"] = counter["clk"] = Wire(1)
+	
 	# assign module inputs and outputs
 	MultiplierControlFSM["lsb"] = n[0]
 	MultiplierControlFSM["req_val"] = m0["sel"]
@@ -146,6 +148,19 @@ def MultiplierControlFSM():
 	MultiplierControlFSM["a_sel"] = m7["out"]
 	MultiplierControlFSM["add_sel"] = m8["out"]
 	MultiplierControlFSM["r_sel"] = m9["out"]
+
+	# MultiplierControlFSM.assign_input("lsb", n, 0)
+	# MultiplierControlFSM.assign_input("req_val", m0, "sel")
+	# MultiplierControlFSM.assign_input("resp_rdy", m2, "sel")
+	# MultiplierControlFSM.assign_input("clk", state_reg, "clk")
+	# MultiplierControlFSM.assign_input("clk", counter, "clk")
+
+	# MultiplierControlFSM.assign_output("req_rdy", m4, "out")
+	# MultiplierControlFSM.assign_output("resp_val", m5, "out")
+	# MultiplierControlFSM.assign_output("b_sel", m6, "out")
+	# MultiplierControlFSM.assign_output("a_sel", m7, "out")
+	# MultiplierControlFSM.assign_output("add_sel", m8, "out")
+	# MultiplierControlFSM.assign_output("r_sel", m9, "out")
 
 	return MultiplierControlFSM
 
