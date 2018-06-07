@@ -15,6 +15,8 @@ class Adder(Component):
 
 		if result is not None:
 			self["Co"].set_value((result >> self["A"].size()) & 1)
+		else:
+			self["Co"].set_value(None)
 
 class ShiftRightLogical(Component):
 	def __init__(self, input_size, shift_size):
