@@ -304,6 +304,7 @@ class Circuit(object):
 
 		for component in self.components:
 			component.update_state()
+		for component in self.components:
 			component.update()
 
 		if self.enable_trace:
