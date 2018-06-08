@@ -247,7 +247,7 @@ terminal output:
 ```
 
 ### Clock
-Each circuit has a built in clock whose period can be set by the user and will toggle its value after a certain number of simulation steps. Being able to set the period of the clock is important since the critical path of the simulation must be taken into account in certain cases (note that in the example above, the output of the final not gate is not resolved until 3 simulation steps have passed). 
+Each circuit has a built in clock whose period can be set by the user and will toggle its value after a certain number of simulation steps. Being able to set the period of the clock is important since the critical path of the simulation must be taken into account in certain cases involving combinational logic (note that in the example above, the output of the final not gate is not resolved until 3 simulation steps have passed). 
 ``` Python
 from pylogic import *
 
