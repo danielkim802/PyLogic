@@ -33,7 +33,7 @@ class Register8Bit(Component):
 			wire.set_value(self.data)
 
 	def update(self):
-		if self.prev_clk == 0 and self.input_state["clk"] == 1 and self.input_state["enable"] == 1:
+		if self.prev_clk == 0 and self.input_state["clk"] == 1 and self.input_state["enable"] == 1 and self.input_state["data"] is not None:
 			self.data = self.input_state["data"]
 		self["out"].set_value(self.data)
 		self.prev_clk = self.input_state["clk"]

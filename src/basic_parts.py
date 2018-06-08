@@ -255,7 +255,7 @@ class Circuit(object):
 		self.components = []
 		self.tracer = {}
 		self.labels = []
-		self.clk = Wire(1, 0)
+		self.clk = Wire(1, 1)
 		self.clk_period = 1
 		self.cycle = 0
 		self.enable_trace = False
@@ -299,20 +299,20 @@ class Circuit(object):
 	# updates state of all components, then updates components
 	# OPTIMIZE LATER
 	def update(self):
-		self.clk.set_value(0)
+		if self.cycle % self.clk_period == 0:
+			self.clk.set_value(1 - self.clk.get_value())
 
-		for i in range(self.clk_period):
-			if i == self.clk_period - 1:
-				self.clk.set_value(1)
-			for component in self.components:
-				component.update_state()
-			for component in self.components:
-				component.update()
+		for component in self.components:
+			component.update_state()
+			component.update()
 
 		if self.enable_trace:
 			self.print_trace()
+
 		self.cycle += 1
 
 	def run(self, cycles):
 		for i in range(cycles):
 			self.update()
+
+			

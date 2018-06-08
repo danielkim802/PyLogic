@@ -3,18 +3,31 @@ sys.path.insert(0, '../src')
 
 from pylogic import *
 
+# 8 bit ALU, supports the following operations:
+#   opcode   |   op   |       func        |
+# - - - - - - - - - - - - - - - - - - - - -
+#    000     |  ADD   |       A + B       |
+#    001     |  SUB   |       A - B       |
+#    010     |  SRA   |  A >> 1 (signed)  |
+#    011     |  SRL   | A >> 1 (unsigned) |
+#    100     |  SLL   |       A << 1      |
+#    101     |  AND   |       A & B       |
+#    110     |  OR    |       A | B       |
+#    111     |  NOT   |        ~A         |
 def ALU8Bit():
 	alu = Module(
-		{
-			"A"  : 8,
-			"B"  : 8,
-			"Op" : 3
-		}, {
-			"Y"  : 8,
-			"C"  : 1,
-			"V"  : 1,
-			"N"  : 1,
-			"Z"  : 1
+		{ # INPUTS
+			"A"  : 8, # A input
+			"B"  : 8, # B input
+			"Op" : 3  # opcode
+		}, 
+
+		{ # OUTPUTS
+			"Y"  : 8, # result
+			"C"  : 1, # carry bit
+			"V"  : 1, # overflow bit
+			"N"  : 1, # negative bit
+			"Z"  : 1  # zero bit
 		}
 	)
 
@@ -83,9 +96,8 @@ def ALU8Bit():
 	]
 	labels = [
 		"adder0", "adder1", "sra", "srl", "sll", "not0", 
-		"not1", "mux0", "mux1", "mux2", 
-		"zero", "xor0", "xor1", "and1", "xor2", "xor3", 
-		"and2", "and0", "or0"
+		"not1", "mux0", "mux1", "mux2", "zero", "xor0", 
+		"xor1", "and1", "xor2", "xor3", "and2", "and0", "or0"
 	]
 	for i in range(len(components)):
 		alu.add_component(components[i])
