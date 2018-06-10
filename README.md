@@ -201,6 +201,36 @@ circ.run(5)
 # check output value
 print and0["out"].get_value()
 ```
+### Clock
+Each circuit has a built in clock whose period can be set by the user and will toggle its value after a certain number of simulation steps. Being able to set the period of the clock is important since the critical path of the simulation must be taken into account in certain cases involving sequential logic.
+``` Python
+from pylogic import *
+
+# create circuit
+circ = Circuit()
+
+# connect components
+not0 = Not(1)
+not0[0] = circ.get_clk()
+
+circ.add_component(not0)
+
+# run the simulation
+circ.trace(not0, 0, "clk")
+circ.trace(not0, "out")
+circ.enable_trace = True
+circ.set_clock_period(3)
+circ.run(6)
+```
+terminal output:
+```
+0 | clk : 0x0 | out : 0x1 | 
+1 | clk : 0x0 | out : 0x1 | 
+2 | clk : 0x0 | out : 0x1 | 
+3 | clk : 0x1 | out : 0x0 | 
+4 | clk : 0x1 | out : 0x0 | 
+5 | clk : 0x1 | out : 0x0 | 
+```
 
 ### Wire tracing
 Inputs and outputs of any component within a circuit can be traced during the simulation and printed on the terminal for each cycle, as seen in the above examples. The component as well as its input or output must be specified. An optional label can be specified as well and the default label is simply the name of the input or output.
@@ -245,9 +275,7 @@ terminal output:
 4 | and0_a : 0x1 | and0_b : 0x0 | not0 : 0x0 | not1 : 0x1 | not2 : 0x0 | out : 0x1 | 
 5 | and0_a : 0x1 | and0_b : 0x0 | not0 : 0x0 | not1 : 0x1 | not2 : 0x0 | out : 0x1 | 
 ```
-
-### Clock
-Each circuit has a built in clock whose period can be set by the user and will toggle its value after a certain number of simulation steps. Being able to set the period of the clock is important since the critical path of the simulation must be taken into account in certain cases involving sequential logic (note that in the example above, the output of the final not gate is not resolved until 3 simulation steps have passed).
+Additionally, the waveform can be displayed for components added to the tracer above:
 ``` Python
 from pylogic import *
 
@@ -265,14 +293,15 @@ circ.trace(not0, 0, "clk")
 circ.trace(not0, "out")
 circ.enable_trace = True
 circ.set_clock_period(3)
-circ.run(6)
+circ.run(20)
+circ.print_waveform()
 ```
 terminal output:
 ```
-0 | clk : 0x0 | out : 0x1 | 
-1 | clk : 0x0 | out : 0x1 | 
-2 | clk : 0x0 | out : 0x1 | 
-3 | clk : 0x1 | out : 0x0 | 
-4 | clk : 0x1 | out : 0x0 | 
-5 | clk : 0x1 | out : 0x0 | 
+    0 1 2 3 4 5 6 7 8 9 0 1 2 3 4 5 6 7 8 9
+         ┌─────┐     ┌─────┐     ┌─────┐    
+clk ─────┘     └─────┘     └─────┘     └────
+    ─────┐     ┌─────┐     ┌─────┐     ┌────
+out      └─────┘     └─────┘     └─────┘    
 ```
+
