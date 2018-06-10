@@ -311,6 +311,12 @@ class Circuit(object):
 			vals = self.waveform[label]
 			for i in range(len(self.waveform[label])):
 
+				# check for None value
+				if vals[i] is None:
+					linetop    += '##'
+					linebottom += '##'
+					continue
+
 				# mark value
 				linetop    += '\xe2\x94\x80' if vals[i] != 0 else " "
 				linebottom += '\xe2\x94\x80' if vals[i] == 0 else " "
