@@ -4,6 +4,7 @@ sys.path.insert(0, '../src')
 from pylogic import *
 
 # 8 bit ALU, supports the following operations:
+#
 #   opcode   |   op   |       func        |
 # - - - - - - - - - - - - - - - - - - - - -
 #    000     |  ADD   |       A + B       |

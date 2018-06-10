@@ -254,6 +254,7 @@ class Circuit(object):
 	def __init__(self):
 		self.components = []
 		self.tracer = {}
+		self.waveform = {}
 		self.labels = []
 		self.clk = Wire(1, 1)
 		self.clk_period = 1
@@ -273,9 +274,11 @@ class Circuit(object):
 		if label is None:
 			self.tracer[str(io)] = (component, io)
 			self.labels += [str(io)]
+			self.waveform[str(io)] = []
 		else:
 			self.tracer[label] = (component, io)
 			self.labels += [label]
+			self.waveform[label] = []
 
 	def clear_trace(self):
 		self.tracer = {}
@@ -291,6 +294,39 @@ class Circuit(object):
 				val = str(component[io].get_value())
 			result += label + " : " + val + " | "
 		print result
+
+	def print_waveform(self):
+		sidelength = len(max(self.labels, key=len))
+
+		# print top step bar
+		print " " * sidelength,
+		for i in range(self.cycle):
+			print str(i % 10),
+		print
+
+		# print cycles for each label
+		for label in self.labels:
+			linebottom = " " * (sidelength - len(label)) + label + " "
+			linetop = " " * len(linebottom)
+			vals = self.waveform[label]
+			for i in range(len(self.waveform[label])):
+
+				# mark value
+				linetop    += '\xe2\x94\x80' if vals[i] != 0 else " "
+				linebottom += '\xe2\x94\x80' if vals[i] == 0 else " "
+
+				# mark transition
+				if i + 1 < len(vals) and vals[i] == 0 and vals[i + 1] != 0:
+					linetop    += '\xe2\x94\x8c'
+					linebottom += '\xe2\x94\x98'
+				elif i + 1 < len(vals) and vals[i] != 0 and vals[i + 1] == 0:
+					linetop    += '\xe2\x94\x90'
+					linebottom += '\xe2\x94\x94'
+				else:
+					linetop    += '\xe2\x94\x80' if vals[i] != 0 else " "
+					linebottom += '\xe2\x94\x80' if vals[i] == 0 else " "
+			print linetop
+			print linebottom
 
 	# returns clock
 	def get_clk(self):
@@ -309,6 +345,10 @@ class Circuit(object):
 
 		if self.enable_trace:
 			self.print_trace()
+
+		for label in self.labels:
+			component, io = self.tracer[label]
+			self.waveform[label] += [component[io].get_value()]
 
 		self.cycle += 1
 
